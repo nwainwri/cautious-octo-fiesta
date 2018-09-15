@@ -1,6 +1,5 @@
 
-# Jazzy Hands
 
-# Notes
+# JazzyHands
 
-Original Code Base pulled from FullStack.IO's "Flappy Bird for iOS 8"
+(reskin, and some items added from FullStack.IOs origin codebase)

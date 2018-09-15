@@ -32,7 +32,13 @@ extension SKNode {
     }
 }
 
-class GameViewController: UIViewController {
+class GameViewController: UIViewController, GameEndedDelegate {
+  
+  
+  func didEnd(imgData: Data) {
+    // do what u need with the  data
+  }
+  
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -42,6 +48,8 @@ class GameViewController: UIViewController {
             let skView = self.view as! SKView
             skView.showsFPS = true
             skView.showsNodeCount = true
+          
+          scene.gameEndDelegate = self
             
             /* Sprite Kit applies additional optimizations to improve rendering performance */
             skView.ignoresSiblingOrder = true
@@ -52,22 +60,4 @@ class GameViewController: UIViewController {
             skView.presentScene(scene)
         }
     }
-
-    override var shouldAutorotate : Bool {
-        return true
-    }
-
-    override var supportedInterfaceOrientations : UIInterfaceOrientationMask {
-        if UIDevice.current.userInterfaceIdiom == .phone {
-            return UIInterfaceOrientationMask.allButUpsideDown
-        } else {
-            return UIInterfaceOrientationMask.all
-        }
-    }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Release any cached data, images, etc that aren't in use.
-    }
-    
 }

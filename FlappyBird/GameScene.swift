@@ -8,7 +8,11 @@
 
 import SpriteKit
 
-class GameScene: SKScene, SKPhysicsContactDelegate{
+class GameScene: SKScene, SKPhysicsContactDelegate
+{
+  
+  var gameEndDelegate: GameEndedDelegate?
+  
   let verticalPipeGap = 150.0
   
   var bird:SKSpriteNode!
@@ -27,7 +31,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
   let pipeCategory: UInt32 = 1 << 2
   let scoreCategory: UInt32 = 1 << 3
   
-  //
+  //properties addon:
+  
+  //  var newGameButton:SKNode!
+  var endMenu = UIView()
+  var playAgain = UIButton()
+  var shareScreen = UIButton()
+  var myLabel:SKLabelNode!
+//  var myLabel = UILabel()
+  
+  var gameOverScreenShot: UIImage!
+  
+//  var gameOverBlockSprite = SKSpriteNode(imageNamed: "PipeUp")
+  
   
   
   
@@ -190,6 +206,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
   
   func resetScene (){
     //      print("DEAD? not first death... ")
+    
     // Move bird to original position and reset velocity
     bird.position = CGPoint(x: self.frame.size.width / 2.5, y: self.frame.midY)
     bird.physicsBody?.velocity = CGVector( dx: 0, dy: 0 )
@@ -207,6 +224,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
     score = 0
     scoreLabelNode.text = String(score)
     
+    
+    
     // Restart animation
     moving.speed = 1
   }
@@ -215,13 +234,29 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
       for _ in touches { // do we need all touches?
         bird.physicsBody?.velocity = CGVector(dx: 0, dy: 0)
         bird.physicsBody?.applyImpulse(CGVector(dx: 0, dy: 30))
+        // MARK: ADDED THIS- - button test attempt
+        
+        //        let location = touch.location(in: self)
+        //
+        //        if (atPoint(location).name == "newGame_button"){
+        //          resetScene()
+        //          print("RESTARTED")
+        //        }
+        
+        // -- ADDED THIS
       }
       //          print("FLYING")
       
     } else if canRestart {
       //          print("triggers restart of game")
-      
       self.resetScene()
+      // MARK: reset labels an buttons to hide after reset OR share
+      playAgain.isHidden = true
+      shareScreen.isHidden = true
+      myLabel.isHidden = true
+      endMenu.isHidden = true
+      //      endMenu.isHidden = true
+      
     }
   }
   
@@ -247,8 +282,96 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         bird.physicsBody?.collisionBitMask = worldCategory
         bird.run(  SKAction.rotate(byAngle: CGFloat(Double.pi) * CGFloat(bird.position.y) * 0.01, duration:1), completion:{self.bird.speed = 0 })
         //               MARK: spot where bird "dies"
-        //                print("ACTUAL DEATH???")
+        print("ACTUAL DEATH???")
         
+        gameOverScreenShot = getScreenshot()
+        // CALL DELEGATE METHOD HERE
+        // OR CALL FUNCTION HERE THAT CALLS DELEGATE INSIDE IT
+        
+        //        sendData()
+        //        let gameOverShot = getScreenshot()
+        //MARK: setup for labels and buttons
+        //        let myLabel = SKLabelNode(fontNamed:"Chalkduster")
+        //        let displaySize: CGRect = UIScreen.main.bounds
+        //        let displayWidth = displaySize.width
+        //        let displayHeight = displaySize.height
+        
+        
+        
+        //        newGameButton = SKSpriteNode(imageNamed: "bird-01")
+        //        newGameButton.position = CGPoint(x: frame.width/3, y: frame.height/2)
+        //        self.addChild(newGameButton)
+        //        newGameButton.name = "newGame_button"
+        //        newGameButton.isHidden = true
+        
+        //        let button: GGButton = GGButton(defaultButtonImage: "PipeUp", activeButtonImage: "PipeDown", buttonAction: getScreenshot)
+        //        button.position = CGPoint(x: frame.width / 2, y: frame.height / 2)
+        //        addChild(button)
+        //        button.isHidden = true
+        
+        
+        endMenu.frame = CGRect(x: 0, y: 0, width: frame.width, height: frame.height)
+        endMenu.backgroundColor = UIColor.darkGray
+        endMenu.alpha = 0.5
+        endMenu.center = (self.view?.center)!
+        endMenu.isUserInteractionEnabled = true
+        
+//        endMenu.isMultipleTouchEnabled = false
+//        endMenu.isExclusiveTouch = true
+                self.view?.addSubview(endMenu)
+
+//        gameOverBlockSprite = SKSpriteNode(imageNamed: "PipeUp")
+//        gameOverBlockSprite.size = CGSize(width: 500, height: 700)
+//        gameOverBlockSprite.color = UIColor.clear
+//        gameOverBlockSprite.zPosition = 1
+//        gameOverBlockSprite.position = CGPoint(x: 0, y: 0)
+//        gameOverBlockSprite.isHidden = false
+//        self.addChild(gameOverBlockSprite)
+        
+        
+        myLabel = SKLabelNode(fontNamed:"Chalkduster")
+        myLabel.text = "GameOver!"
+        myLabel.fontSize = 65
+        myLabel.position = CGPoint(x: frame.width/2, y: frame.height/2)
+        //        myLabel.zPosition = 3
+        self.addChild(myLabel)
+        
+        
+        
+        //THIS WORKS AS A BUTTON
+        //        let playAgain = UIButton()
+        playAgain.frame = CGRect(x: 0 , y: 0, width: 75, height: 25)
+        let playAgainImg = UIImage(named: "restart")
+        playAgain.setImage(playAgainImg, for: .normal)
+        //        playAgain.frame = CGRect(x: frame.width/2, y: frame.height/2, width: 100, height: 36)
+        playAgain.backgroundColor = UIColor.red
+        playAgain.center = CGPoint(x: 50, y: frame.height/4)
+        //        playAgain.center = (self.view?.center)!
+        self.view?.addSubview(playAgain)
+        playAgain.addTarget(self, action: #selector(newGame(_:)), for: .touchUpInside)
+        // -- END
+        
+        //THIS WORKS AS A BUTTON
+        //        let playAgain = UIButton()
+        shareScreen.frame = CGRect(x: 0 , y: 0, width: 75, height: 25)
+        let shareScoreImg = UIImage(named: "share")
+        shareScreen.setImage(shareScoreImg, for: .normal)
+        //        shareScreen.imageView?.image = UIImage(contentsOfFile: "PipeUp")
+        //        playAgain.frame = CGRect(x: frame.width/2, y: frame.height/2, width: 100, height: 36)
+        shareScreen.backgroundColor = UIColor.purple
+        shareScreen.center = CGPoint(x: 200, y: frame.height/4)
+        //        playAgain.center = (self.view?.center)!
+        self.view?.addSubview(shareScreen)
+        shareScreen.addTarget(self, action: #selector(playAgainTapped(_:)), for: .touchUpInside)
+        // -- END
+        
+        
+        
+        
+        playAgain.isHidden = false
+        shareScreen.isHidden = false
+                endMenu.isHidden = false
+        myLabel.isHidden = false
         
         
         // Flash background if contact is detected
@@ -261,6 +384,96 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
           self.canRestart = true
         })]), withKey: "flash")
       }
+      
     }
+    
+    
   }
+  
+  
+  // addon functions
+  func getScreenshot() -> UIImage {
+    let myScreen = self
+    let snapshotView = myScreen.view!.snapshotView(afterScreenUpdates: true)
+    let bounds = UIScreen.main.bounds
+    UIGraphicsBeginImageContextWithOptions(bounds.size, false, 0)
+    snapshotView?.drawHierarchy(in: bounds, afterScreenUpdates: true)
+    let screenshotImage : UIImage = UIGraphicsGetImageFromCurrentImageContext()! // MARK: REMOVE '!'
+    UIGraphicsEndImageContext()
+    print("SCREENSHOT")
+    return screenshotImage;
+  }
+  
+  
+  func sendData ()
+  {
+    //      gameEndDelegate?.didEnd(imgData: <#T##Data#>)
+    print("BUTTON ")
+  }
+  
+  
+  //MARK: function so far to call button items and such... use this for reset
+  // make a second one to add sharing.
+  @objc func playAgainTapped(_ sender: Any?) -> Void {
+    print("Play again was Tapped!")
+    shareScore()
+    //    resetScene()
+    // take whatever action you want here
+  }
+  
+  @objc func newGame(_ sender: Any?) -> Void {
+    print("restart Button tapped")
+    playAgain.isHidden = true
+    shareScreen.isHidden = true
+    myLabel.isHidden = true
+    endMenu.isHidden = true
+    resetScene()
+  }
+  
+  
+  func shareScore() {
+    let postText: String = "Check out my score! Can you beat it?"
+    // MARK: seems to take screenshot AFTER reset.
+    
+    // MARK: NEED TO SET SCREENSHOT ONCE DEATH HAPPENS ; SAVE THAT IMAGE AND ONLY USE IT DURING SHARE/RESET.
+    //
+    //    [access] This app has crashed because it attempted to access privacy-sensitive data without a usage description.  The app's Info.plist must contain an NSPhotoLibraryAddUsageDescription key with a string value explaining to the user how the app uses this data.
+    //
+    //    had to add this
+    //
+    //    <key>NSPhotoLibraryAddUsageDescription</key>
+    //    <string>Our application needs permission to write photos...</string>
+    let postImage: UIImage = gameOverScreenShot
+    let activityItems = [postText, postImage] as [Any]
+    let activityController = UIActivityViewController(
+      activityItems: activityItems,
+      applicationActivities: nil
+    )
+    
+    let controller: UIViewController = self.view!.window!.rootViewController!
+    
+    controller.present(
+      activityController,
+      animated: true,
+      completion: nil
+    )
+  }
+  
+  //  func getScreenshoted(scene: SKScene) -> UIImage {
+  //    let snapshotView = scene.view!.snapshotView(afterScreenUpdates: true)
+  //    let bounds = UIScreen.main.bounds
+  //
+  //    UIGraphicsBeginImageContextWithOptions(bounds.size, false, 0)
+  //
+  //    snapshotView?.drawHierarchy(in: bounds, afterScreenUpdates: true)
+  //
+  //    var screenshotImage : UIImage = UIGraphicsGetImageFromCurrentImageContext()!
+  //
+  //    UIGraphicsEndImageContext()
+  //
+  //    return screenshotImage;
+  //  }
+  
+  
+  
 }
